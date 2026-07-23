@@ -31,10 +31,10 @@
       "key": "final",
       "name": "Final",
       "advance_cut": 0,
-      "tournaments": ["eu-26ewcmt"],
+      "tournaments": [],
       "adjustments": [],
       "twireTournament": "",
-      "_status": "잠정 — 파이널 시작(7/24) 후: PUBG tournament ID + Twire round값 확인해 tournaments/twireTournament 교정."
+      "_status": "미시작(7/24~26). 시작 후 tournaments에 실제 PUBG ID(`py -m src.poll --list`로 확인) + twireTournament(Twire shard+round) 채우면 활성화. 그전까지 빈 값 → 대시보드에 '예정'으로 표시."
     }
   ]
 }
