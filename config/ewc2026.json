@@ -1,0 +1,29 @@
+{
+  "event": "EWC 2026 — PUBG: 배틀그라운드",
+  "tz_offset_hours": 9,
+  "_note": "phases = 대회 단계(대카테고리). 각 phase 안에서 DAY별 + TOTAL(그 단계 누적) 리더보드가 만들어진다. tournaments = 그 단계에 해당하는 PUBG tournament ID. `py -m src.poll --list` 로 ID 확인/교정.",
+  "points": {
+    "name": "EWC 2026 (PLACEHOLDER — 공식 배점 확정 필요)",
+    "placement_points": {
+      "1": 10, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2, "7": 1,
+      "8": 0, "9": 0, "10": 0, "11": 0, "12": 0, "13": 0, "14": 0, "15": 0, "16": 0
+    },
+    "kill_points_per_kill": 1,
+    "team_tag": { "from": "name_prefix", "separator": "_" }
+  },
+  "phases": [
+    {
+      "key": "group",
+      "name": "Group Stage",
+      "advance_cut": 16,
+      "tournaments": ["eu-ewc26gs"]
+    },
+    {
+      "key": "final",
+      "name": "Final",
+      "advance_cut": 0,
+      "tournaments": ["eu-26ewcmt"],
+      "_status": "잠정 — 파이널 tournament ID 확인 필요 (2026 네이밍 상이). --list 로 교정."
+    }
+  ]
+}

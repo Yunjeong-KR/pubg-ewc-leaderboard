@@ -1,0 +1,38 @@
+name: poll-leaderboard
+
+# 경기 종료 직후 리더보드 자동 갱신:
+#   스케줄로 폴러 실행 → web/leaderboard.json 갱신 → 커밋/푸시 → Pages 자동 재배포.
+# API 키는 repo Secret(PUBG_API_KEY)로만 주입한다 (절대 커밋 금지).
+
+on:
+  schedule:
+    - cron: "*/10 * * * *"   # 10분마다 (GitHub Actions 최소 주기 5분)
+  workflow_dispatch: {}       # 수동 실행 버튼
+
+concurrency:
+  group: poll
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  poll:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Poll PUBG API and build leaderboard
+        env:
+          PUBG_API_KEY: ${{ secrets.PUBG_API_KEY }}
+          EVENT_CONFIG: config/ewc2026.json
+        run: python -m src.poll --once   # stdlib만 사용 — pip install 불필요
+      - name: Commit updated leaderboard
+        run: |
+          git config user.name "leaderboard-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add web/leaderboard.json
+          git diff --cached --quiet || git commit -m "chore: update leaderboard $(date -u +%FT%TZ)"
+          git push

@@ -1,0 +1,13 @@
+# 비밀·런타임 산출물은 커밋하지 않는다
+.env
+secrets.env
+src/.env
+src/secrets.env
+src/data/
+src/.venv/
+**/__pycache__/
+*.pyc
+
+# 로컬 폴링러가 캐시하는 원시 매치 데이터 (재현 가능하므로 커밋 안 함)
+raw_matches/
+telemetry_cache/
