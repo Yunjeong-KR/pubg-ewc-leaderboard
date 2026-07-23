@@ -14,12 +14,16 @@ python -m src.poll --once          # 외부 의존성 없음 (Python 3.10+ stdli
 python -m http.server 8000 --directory web   # http://localhost:8000
 ```
 
-## 배포 (GitHub Actions + Pages)
+## 배포 (GitHub Actions → Pages) — 라이브
 
-1. 이 레포를 **public**으로 둔다.
-2. Settings → Secrets and variables → Actions → `PUBG_API_KEY` 등록.
-3. Settings → Pages → Deploy from a branch → `main` / `/web`.
-4. Actions → `poll-leaderboard` → Run workflow (이후 10분마다 자동).
+**🔗 https://yunjeong-kr.github.io/pubg-ewc-leaderboard/**
+
+`.github/workflows/poll.yml` 이 10분마다(및 push 시) 폴러를 돌려 `web/` 를 Pages 아티팩트로
+배포한다. 봇 커밋 없이 Pages가 갱신된다. 설정은 완료되어 있음:
+
+- Pages: **Settings → Pages → Source = GitHub Actions** (build_type: workflow).
+- Secret: `PUBG_API_KEY` (Settings → Secrets and variables → Actions).
+- 수동 실행: Actions → `poll-leaderboard` → Run workflow.
 
 ## 대회 전환
 
