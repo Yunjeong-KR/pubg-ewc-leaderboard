@@ -174,13 +174,8 @@ function downloadResults() {
   const playerRows = players.map((p, i) => [i + 1, p.name, p.kills, p.damageDealt, p.assists, p.matches, p.wwcd, p.tag]);
   const base = sanitize(`${DATA.meta.event || "leaderboard"}_${fileLabel()}`);
 
-  if (window.XLSX) {
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([teamHeader, ...teamRows]), "팀 순위");
-    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([playerHeader, ...playerRows]), "선수");
-    XLSX.writeFile(wb, base + ".xlsx");
-  } else {
-    // CDN 미로딩 시 CSV 폴백 (현재 탭, UTF-8 BOM → 엑셀에서 한글 정상)
+  // CSV 폴백 (현재 탭, UTF-8 BOM → 엑셀에서 한글 정상)
+  function csvDownload() {
     const header = curTab === "teams" ? teamHeader : playerHeader;
     const rows = curTab === "teams" ? teamRows : playerRows;
     const csv = [header, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\r\n");
@@ -188,8 +183,24 @@ function downloadResults() {
     const a = document.createElement("a");
     a.href = URL.createObjectURL(blob);
     a.download = base + ".csv";
+    document.body.appendChild(a);
     a.click();
-    URL.revokeObjectURL(a.href);
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+  }
+
+  try {
+    if (!window.XLSX) throw new Error("XLSX 라이브러리 미로딩");
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([teamHeader, ...teamRows]), "팀 순위");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([playerHeader, ...playerRows]), "선수");
+    XLSX.writeFile(wb, base + ".xlsx");
+  } catch (e) {
+    try {
+      csvDownload();  // xlsx 실패 시 CSV로 폴백
+    } catch (e2) {
+      alert("다운로드 실패: " + ((e2 && e2.message) || e2));
+    }
   }
 }
 
