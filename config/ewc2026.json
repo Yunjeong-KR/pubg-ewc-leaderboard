@@ -16,7 +16,9 @@
   "twire": {
     "endpoint": "https://tjjkdyimqrb7jjnc6m5rpefjtu.appsync-api.eu-west-1.amazonaws.com/graphql",
     "apiKey": "da2-vqpq6wms5ndbvhl2r7kvzbpmfi",
-    "_note": "Twire 공개 웹앱이 브라우저에 노출하는 클라이언트 키(비밀 아님). 대시보드가 직접 대조에 사용. phase.twireTournament = Twire 대회 shard + '-' + round값 (tournamentById로 확인)."
+    "twireId": 2587,
+    "shard": "4bbcb126-84f8-11f1-b903-6adabec81c44",
+    "_note": "Twire 공개 웹앱 클라이언트 키(비밀 아님). 대시보드가 직접 대조에 사용. phase.twireTournament = shard + '-' + round값. round값은 `py -m src.poll --twire-info`(또는 discover 워크플로)로 확인."
   },
   "phases": [
     {

@@ -1,0 +1,25 @@
+name: discover
+
+# 파이널/새 대회 전환 시, 브라우저만으로 필요한 값을 찾기 위한 도구.
+#   레포 → Actions → "discover" → Run workflow → 실행 로그에서 값 확인:
+#     ① PUBG 대회 ID 목록 (파이널의 실제 tournament ID 찾기)
+#     ② Twire 라운드값 → 붙여넣을 twireTournament 문자열
+#   찾은 값을 config/ewc2026.json (final.tournaments / final.twireTournament) 에 넣고 커밋하면 자동 반영.
+
+on:
+  workflow_dispatch: {}
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: PUBG 대회 ID 목록 (최신순)
+        env:
+          PUBG_API_KEY: ${{ secrets.PUBG_API_KEY }}
+        run: python -m src.poll --list
+      - name: Twire 라운드값 (twireTournament 구성용)
+        run: python -m src.poll --twire-info

@@ -104,6 +104,30 @@ def build_event(client: PubgClient, cfg: dict, cache_dir: pathlib.Path,
     }
 
 
+def twire_info(cfg: dict) -> None:
+    """Twire 대회 필터(round/group 값) 조회 — 파이널 등 twireTournament 값을 구성할 때 사용.
+
+    출력의 'twireTournament = ...' 줄을 config phase 의 twireTournament 에 그대로 넣으면 된다.
+    """
+    import urllib.request
+    tw = cfg.get("twire") or {}
+    ep, key, tid = tw.get("endpoint"), tw.get("apiKey"), tw.get("twireId")
+    if not (ep and key and tid):
+        print("twire 설정(endpoint/apiKey/twireId)이 없습니다.", file=sys.stderr)
+        return
+    q = ("query TournamentById($id: Int!, $game: String!){ tournamentById(id:$id, game:$game){"
+         " friendlyName shard tournamentFilters { name value children { name value } } } }")
+    body = json.dumps({"query": q, "variables": {"id": int(tid), "game": "pubg"}}).encode()
+    req = urllib.request.Request(ep, data=body, headers={"x-api-key": key, "Content-Type": "application/json"})
+    t = (json.load(urllib.request.urlopen(req, timeout=20)).get("data") or {}).get("tournamentById") or {}
+    shard = t.get("shard")
+    print(f"Twire: {t.get('friendlyName')}  (shard={shard})")
+    for f in t.get("tournamentFilters") or []:
+        print(f"  라운드 '{f.get('name')}'  ->  twireTournament = {shard}-{f.get('value')}")
+        for c in f.get("children") or []:
+            print(f"       그룹 '{c.get('name')}' value={c.get('value')!r}")
+
+
 def main(argv: list[str] | None = None) -> int:
     load_dotenv(ROOT / ".env")
     ap = argparse.ArgumentParser(description="PUBG Esports 리더보드 폴링러 (단계별)")
@@ -118,14 +142,19 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--tz", type=int, default=None, help="날짜 버킷 시간대 오프셋(시). 기본=설정값 또는 9(KST)")
     ap.add_argument("--once", action="store_true", help="1회 실행 후 종료")
     ap.add_argument("--interval", type=int, default=int(os.environ.get("POLL_INTERVAL_SEC", "60")))
-    ap.add_argument("--list", action="store_true", help="사용 가능한 대회 ID 목록만 출력하고 종료")
+    ap.add_argument("--list", action="store_true", help="사용 가능한 PUBG 대회 ID 목록만 출력하고 종료")
+    ap.add_argument("--twire-info", dest="twire_info", action="store_true",
+                    help="Twire 대회 라운드(round) 값 조회 — 파이널 twireTournament 구성용")
     args = ap.parse_args(argv)
 
-    client = PubgClient(os.environ.get("PUBG_API_KEY", ""), shard=args.shard)
-
-    if args.list:  # 대회 ID 찾기/교정 (EWC / PGS 등 전환 시)
+    if args.list:  # PUBG 대회 ID 찾기/교정 (파이널·PGS 등 전환 시) — PUBG 키 필요
+        client = PubgClient(os.environ.get("PUBG_API_KEY", ""), shard=args.shard)
         for t in sorted(client.list_tournaments(), key=lambda x: x.get("createdAt") or "", reverse=True):
             print(f"{t['id']:<16} {t.get('createdAt','')}")
+        return 0
+
+    if args.twire_info:  # Twire 라운드값 조회 (PUBG 키 불필요)
+        twire_info(json.loads(_resolve(args.event).read_text(encoding="utf-8")))
         return 0
 
     if args.tournament:  # 애드혹 단일 단계
@@ -136,6 +165,7 @@ def main(argv: list[str] | None = None) -> int:
     else:
         cfg = json.loads(_resolve(args.event).read_text(encoding="utf-8"))
 
+    client = PubgClient(os.environ.get("PUBG_API_KEY", ""), shard=args.shard)
     tz_offset = args.tz if args.tz is not None else int(cfg.get("tz_offset_hours", 9))
     out_path = _resolve(args.out)
     cache_dir = _resolve(args.cache_dir)
