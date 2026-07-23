@@ -103,12 +103,9 @@ function xcCell(tag, field, ourVal, isTotal) {
   return `<span class="diff" title="우리 계산: ${fmt(ourVal)} · Twire 기준으로 표시">${fmt(w[field])}</span>`;
 }
 
-// 팀 셀: 공식 풀네임 + 태그 병기 (풀네임 없으면 태그만)
-function teamCell(tag) {
-  const full = ((DATA.meta || {}).teamNames || {})[tag];
-  return full && full !== tag
-    ? `<span class="fullname">${esc(full)}</span><span class="tagsub">${esc(tag)}</span>`
-    : `<span class="fullname">${esc(tag)}</span>`;
+// 태그 → 공식 풀네임 (없으면 태그 그대로)
+function fullName(tag) {
+  return ((DATA.meta || {}).teamNames || {})[tag] || tag;
 }
 
 function teamsTable(teams, isTotal) {
@@ -124,7 +121,8 @@ function teamsTable(teams, isTotal) {
       : "";
     out += `<tr${cls}>
       <td class="rank">${t.standing}</td>
-      <td>${teamCell(t.tag)}</td>
+      <td class="fullname">${esc(fullName(t.tag))}</td>
+      <td class="tag">${esc(t.tag)}</td>
       <td class="num">${fmt(t.matches)}</td>
       <td class="num">${fmt(t.placement_points)}</td>
       <td class="num">${xcCell(t.tag, "kills", t.kill_points, isTotal)}</td>
@@ -133,11 +131,11 @@ function teamsTable(teams, isTotal) {
       <td class="players">${esc((t.players || []).join(", "))}</td>
     </tr>`;
     if (cut && t.standing === cut) {
-      out += `<tr class="cutline"><td colspan="8"><div>▲ 진출 (상위 ${cut}) ㆍ 탈락 ▼</div></td></tr>`;
+      out += `<tr class="cutline"><td colspan="9"><div>▲ 진출 (상위 ${cut}) ㆍ 탈락 ▼</div></td></tr>`;
     }
   });
-  return `<table><thead><tr>
-    <th>#</th><th>팀</th><th>경기</th><th>순위P</th><th>킬P</th><th>총점</th><th>WWCD</th><th>선수</th>
+  return `<table class="tbl-team"><thead><tr>
+    <th>#</th><th>팀명</th><th>태그</th><th>경기</th><th>순위P</th><th>킬P</th><th>총점</th><th>WWCD</th><th>선수</th>
   </tr></thead><tbody>${out}</tbody></table>`;
 }
 
@@ -153,7 +151,7 @@ function playersTable(players) {
     <td class="num">${fmt(p.wwcd)}</td>
     <td>${esc(p.tag)}</td>
   </tr>`).join("");
-  return `<table><thead><tr>
+  return `<table class="tbl-player"><thead><tr>
     <th>#</th><th>선수</th><th>킬</th><th>데미지</th><th>어시</th><th>경기</th><th>WWCD</th><th>팀</th>
   </tr></thead><tbody>${rows}</tbody></table>`;
 }

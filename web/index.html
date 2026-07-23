@@ -70,7 +70,9 @@
   table { width: 100%; border-collapse: collapse; background: var(--panel); border-radius: 10px; overflow: hidden; }
   th, td { padding: 11px 12px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
   th { color: var(--muted); font-weight: 600; font-size: 12px; text-transform: uppercase; letter-spacing: .5px; }
-  th:nth-child(-n+2), td:nth-child(-n+2) { text-align: left; }
+  .tbl-team th:nth-child(-n+3), .tbl-team td:nth-child(-n+3) { text-align: left; }
+  .tbl-player th:nth-child(-n+2), .tbl-player td:nth-child(-n+2) { text-align: left; }
+  td.players, th:last-child { text-align: left; }
   tbody tr:hover { background: var(--panel-2); }
   tbody tr:last-child td { border-bottom: 0; }
   .rank { font-variant-numeric: tabular-nums; color: var(--muted); width: 40px; }
