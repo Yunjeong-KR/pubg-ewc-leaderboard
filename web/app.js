@@ -117,10 +117,10 @@ function teamsTable(teams, isTotal) {
     out += `<tr${cls}>
       <td class="rank">${t.standing}</td>
       <td class="tag">${esc(t.tag)}</td>
-      <td class="total">${xcCell(t.tag, "total", t.total, isTotal)}${adjBadge}</td>
+      <td class="num">${fmt(t.matches)}</td>
       <td class="num">${fmt(t.placement_points)}</td>
       <td class="num">${xcCell(t.tag, "kills", t.kill_points, isTotal)}</td>
-      <td class="num">${fmt(t.matches)}</td>
+      <td class="total">${xcCell(t.tag, "total", t.total, isTotal)}${adjBadge}</td>
       <td class="num">${fmt(t.wins)}</td>
       <td class="players">${esc((t.players || []).join(", "))}</td>
     </tr>`;
@@ -129,8 +129,7 @@ function teamsTable(teams, isTotal) {
     }
   });
   return `<table><thead><tr>
-    <th>#</th><th>팀</th><th>총점</th><th>순위P</th><th>킬P</th>
-    <th>경기</th><th>WWCD</th><th>선수</th>
+    <th>#</th><th>팀</th><th>경기</th><th>순위P</th><th>킬P</th><th>총점</th><th>WWCD</th><th>선수</th>
   </tr></thead><tbody>${out}</tbody></table>`;
 }
 
