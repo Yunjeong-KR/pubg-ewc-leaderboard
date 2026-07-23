@@ -53,6 +53,8 @@
     padding: 8px 18px; border-radius: 8px; cursor: pointer; font-size: 14px;
   }
   .tabs button[aria-selected="true"] { background: var(--panel-2); color: var(--fg); border-color: var(--accent); }
+  .tabs .dl { margin-left: auto; background: #14512c; color: #d7f5e2; border-color: #1f7a43; font-weight: 600; }
+  .tabs .dl:hover { background: #1a6637; }
   .banner {
     background: #3a2a12; color: #f5c542; border: 1px solid #5a4420;
     padding: 9px 14px; border-radius: 8px; font-size: 13px; margin-bottom: 16px;
@@ -97,10 +99,12 @@
   <div class="tabs" role="tablist">
     <button id="tab-teams" role="tab" aria-selected="true" onclick="setTab('teams')">팀 순위</button>
     <button id="tab-players" role="tab" aria-selected="false" onclick="setTab('players')">선수 (킬)</button>
+    <button class="dl" onclick="downloadResults()" title="현재 보고 있는 뷰를 엑셀로 저장">⬇ 엑셀 다운로드</button>
   </div>
   <div id="view"></div>
 </main>
 <footer>경기 종료 직후 PUBG API 데이터 기준 · 자동 갱신 (GitHub Actions)</footer>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="app.js"></script>
 </body>
 </html>

@@ -148,6 +148,51 @@ function render() {
     curTab === "teams" ? teamsTable(sel.data.teams || [], sel.isTotal) : playersTable(sel.data.players || []);
 }
 
+// --- 엑셀/CSV 다운로드 -------------------------------------------------
+function fileLabel() {
+  const p = phase();
+  if (curView === "total") return `${p.name}_TOTAL`;
+  const d = curDay();
+  if (curMatch) {
+    const mt = (d.matches || []).find((m) => m.match_id === curMatch);
+    return `${p.name}_${d.label}${mt ? "_" + mt.game + "경기" : ""}`;
+  }
+  return `${p.name}_${d ? d.label : ""}`;
+}
+const sanitize = (s) => String(s).replace(/[\\/:*?"<>|]+/g, "").replace(/\s+/g, "_").replace(/_+/g, "_").replace(/^_|_$/g, "");
+
+function downloadResults() {
+  if (!DATA) return;
+  const sel = currentSet();
+  const teams = sel.data.teams || [];
+  const players = sel.data.players || [];
+  if (!teams.length && !players.length) { alert("이 뷰에는 다운로드할 데이터가 없습니다."); return; }
+
+  const teamHeader = ["순위", "팀", "총점", "순위P", "킬P", "경기", "WWCD", "최고순위", "평균순위", "선수"];
+  const teamRows = teams.map((t) => [t.standing, t.tag, t.total, t.placement_points, t.kill_points, t.matches, t.wins, t.best_rank, t.avg_rank, (t.players || []).join(", ")]);
+  const playerHeader = ["순위", "선수", "킬", "데미지", "어시", "경기", "WWCD", "팀"];
+  const playerRows = players.map((p, i) => [i + 1, p.name, p.kills, p.damageDealt, p.assists, p.matches, p.wwcd, p.tag]);
+  const base = sanitize(`${DATA.meta.event || "leaderboard"}_${fileLabel()}`);
+
+  if (window.XLSX) {
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([teamHeader, ...teamRows]), "팀 순위");
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet([playerHeader, ...playerRows]), "선수");
+    XLSX.writeFile(wb, base + ".xlsx");
+  } else {
+    // CDN 미로딩 시 CSV 폴백 (현재 탭, UTF-8 BOM → 엑셀에서 한글 정상)
+    const header = curTab === "teams" ? teamHeader : playerHeader;
+    const rows = curTab === "teams" ? teamRows : playerRows;
+    const csv = [header, ...rows].map((r) => r.map((c) => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\r\n");
+    const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = base + ".csv";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+}
+
 function setPhase(i) { curPhase = i; curView = "total"; curMatch = null; render(); }
 function setView(v) { curView = v; curMatch = null; render(); }
 function setMatch(id) { curMatch = id; render(); }
