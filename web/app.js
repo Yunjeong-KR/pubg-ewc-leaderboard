@@ -122,17 +122,15 @@ function teamsTable(teams, isTotal) {
       <td class="num">${xcCell(t.tag, "kills", t.kill_points, isTotal)}</td>
       <td class="num">${fmt(t.matches)}</td>
       <td class="num">${fmt(t.wins)}</td>
-      <td class="num">${t.best_rank}</td>
-      <td class="num">${t.avg_rank}</td>
       <td class="players">${esc((t.players || []).join(", "))}</td>
     </tr>`;
     if (cut && t.standing === cut) {
-      out += `<tr class="cutline"><td colspan="10"><div>▲ 진출 (상위 ${cut}) ㆍ 탈락 ▼</div></td></tr>`;
+      out += `<tr class="cutline"><td colspan="8"><div>▲ 진출 (상위 ${cut}) ㆍ 탈락 ▼</div></td></tr>`;
     }
   });
   return `<table><thead><tr>
     <th>#</th><th>팀</th><th>총점</th><th>순위P</th><th>킬P</th>
-    <th>경기</th><th>WWCD</th><th>최고</th><th>평균순위</th><th>선수</th>
+    <th>경기</th><th>WWCD</th><th>선수</th>
   </tr></thead><tbody>${out}</tbody></table>`;
 }
 
