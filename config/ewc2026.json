@@ -12,18 +12,21 @@
     "kill_points_per_kill": 1,
     "team_tag": { "from": "name_prefix", "separator": "_" }
   },
+  "_adjustments_help": "adjustments = 운영진 수동 보정(API로 계산 불가). 각 항목 {tag, points, reason}. 예: {\"tag\":\"GEN\",\"points\":-10,\"reason\":\"규정외 스킨\"} 또는 파이널 SMASH {\"tag\":\"VP\",\"points\":10,\"reason\":\"Day2 1위 어드밴티지\"}. 비워두면 순수 SUPER 계산값.",
   "phases": [
     {
       "key": "group",
       "name": "Group Stage",
       "advance_cut": 16,
-      "tournaments": ["eu-ewc26gs"]
+      "tournaments": ["eu-ewc26gs"],
+      "adjustments": []
     },
     {
       "key": "final",
       "name": "Final",
       "advance_cut": 0,
       "tournaments": ["eu-26ewcmt"],
+      "adjustments": [],
       "_status": "잠정 — 파이널 tournament ID 확인 필요 (2026 네이밍 상이). --list 로 교정."
     }
   ]

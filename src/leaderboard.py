@@ -157,6 +157,33 @@ def aggregate(parsed_matches: list[dict]) -> dict:
     return {"teams": team_rows, "players": player_rows}
 
 
+_TIEBREAK = lambda r: (  # noqa: E731 — 공식 SUPER 누적 타이브레이크 정렬 키
+    -r["total"], -r["placement_points"],
+    -r["last_match_points"], -r["last_placement"], -r["last_damage"],
+)
+
+
+def apply_adjustments(total_view: dict, adjustments: list[dict]) -> None:
+    """운영 수동 보정(CP·패널티·어드밴티지 등)을 phase 누적 총점에 반영하고 재정렬.
+
+    adjustments = [{"tag": "GEN", "points": -10, "reason": "규정외 스킨"}, ...]
+    보정은 API로 알 수 없는 운영진 판단값 — 없으면 아무 변화 없음.
+    """
+    if not adjustments:
+        return
+    by_tag = {t["tag"]: t for t in total_view["teams"]}
+    for adj in adjustments:
+        t = by_tag.get(adj.get("tag"))
+        if not t:
+            continue
+        pts = int(adj.get("points", 0))
+        t["total"] += pts
+        t.setdefault("adjustments", []).append({"points": pts, "reason": adj.get("reason", "")})
+    total_view["teams"].sort(key=_TIEBREAK)
+    for i, r in enumerate(total_view["teams"], 1):
+        r["standing"] = i
+
+
 def _day_key(created_at: str | None, tz_offset_hours: int) -> str:
     if not created_at:
         return "unknown"

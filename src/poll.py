@@ -21,7 +21,7 @@ import pathlib
 import sys
 import time
 
-from .leaderboard import build_views, parse_match
+from .leaderboard import apply_adjustments, build_views, parse_match
 from .pubg_client import PubgClient
 from .scoring import PointsRules
 
@@ -77,11 +77,17 @@ def build_event(client: PubgClient, cfg: dict, cache_dir: pathlib.Path,
         print(f"[{ph.get('name', ph.get('key'))}]", file=sys.stderr)
         parsed = fetch_parsed(client, ph.get("tournaments", []), rules, cache_dir, esports_only)
         views = build_views(parsed, tz_offset_hours=tz_offset)
+        # 운영 수동 보정(CP·패널티·어드밴티지) — 설정에 있으면 phase 총점에 반영
+        adjustments = ph.get("adjustments", [])
+        apply_adjustments(views["total"], adjustments)
+        if adjustments:
+            print(f"  (수동 보정 {len(adjustments)}건 적용)", file=sys.stderr)
         phases_out.append({
             "key": ph.get("key"),
             "name": ph.get("name", ph.get("key")),
             "advanceCut": int(ph.get("advance_cut", 0)),
             "matchCount": len(parsed),
+            "adjustments": adjustments,
             "total": views["total"],
             "days": views["days"],
         })

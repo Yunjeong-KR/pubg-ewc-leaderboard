@@ -97,10 +97,15 @@ function teamsTable(teams, isTotal) {
   let out = "";
   teams.forEach((t) => {
     const cls = t.standing <= 3 ? ` class="top${t.standing}"` : "";
+    const adjList = t.adjustments || [];
+    const adjSum = adjList.reduce((s, a) => s + a.points, 0);
+    const adjBadge = adjSum
+      ? ` <span class="adj" title="${esc(adjList.map((a) => `${a.points > 0 ? "+" : ""}${a.points} ${a.reason}`).join("; "))}">(${adjSum > 0 ? "+" : ""}${adjSum})</span>`
+      : "";
     out += `<tr${cls}>
       <td class="rank">${t.standing}</td>
       <td class="tag">${esc(t.tag)}</td>
-      <td class="total">${fmt(t.total)}</td>
+      <td class="total">${fmt(t.total)}${adjBadge}</td>
       <td class="num">${fmt(t.placement_points)}</td>
       <td class="num">${fmt(t.kill_points)}</td>
       <td class="num">${fmt(t.matches)}</td>
