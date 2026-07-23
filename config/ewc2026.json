@@ -3,10 +3,11 @@
   "tz_offset_hours": 9,
   "_note": "phases = 대회 단계(대카테고리). 각 phase 안에서 DAY별 + TOTAL(그 단계 누적) 리더보드가 만들어진다. tournaments = 그 단계에 해당하는 PUBG tournament ID. `py -m src.poll --list` 로 ID 확인/교정.",
   "points": {
-    "name": "EWC 2026 (PLACEHOLDER — 공식 배점 확정 필요)",
+    "name": "EWC 2026 공식 (SUPER v6.0.1)",
+    "_source": "SUPER v6.0.1 §10 / EWC 2026 룰북 §5.2 — 킬 1점, 순위점 1위10·2위6·3위5·4위4·5위3·6위2·7위1·8위1·9~16위0",
     "placement_points": {
       "1": 10, "2": 6, "3": 5, "4": 4, "5": 3, "6": 2, "7": 1,
-      "8": 0, "9": 0, "10": 0, "11": 0, "12": 0, "13": 0, "14": 0, "15": 0, "16": 0
+      "8": 1, "9": 0, "10": 0, "11": 0, "12": 0, "13": 0, "14": 0, "15": 0, "16": 0
     },
     "kill_points_per_kill": 1,
     "team_tag": { "from": "name_prefix", "separator": "_" }

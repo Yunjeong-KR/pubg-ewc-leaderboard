@@ -60,6 +60,7 @@ def parse_match(match_json: dict, rules: PointsRules) -> dict:
             "tag": tag,
             "rank": rank,
             "kills": team_kills,
+            "damage": round(sum(p["damageDealt"] for p in players), 1),
             "placement_points": placement_pts,
             "kill_points": kill_pts,
             "total": placement_pts + kill_pts,
@@ -81,6 +82,8 @@ def aggregate(parsed_matches: list[dict]) -> dict:
     teams: dict[str, dict] = defaultdict(lambda: {
         "tag": "", "total": 0, "placement_points": 0, "kill_points": 0,
         "kills": 0, "matches": 0, "wins": 0, "best_rank": 99, "_rank_sum": 0,
+        # 최근 경기(createdAt 최신) 기준 타이브레이크 값 — 매치 순회 중 덮어씀
+        "last_match_points": 0, "last_placement": 0, "last_damage": 0.0,
         "players": set(),
     })
     players: dict[str, dict] = defaultdict(lambda: {
@@ -101,6 +104,10 @@ def aggregate(parsed_matches: list[dict]) -> dict:
             agg["wins"] += 1 if t["won"] else 0
             agg["best_rank"] = min(agg["best_rank"], t["rank"])
             agg["_rank_sum"] += t["rank"]
+            # 매치를 createdAt 오름차순으로 순회하므로, 마지막 대입이 곧 '최근 경기' 값
+            agg["last_match_points"] = t["total"]
+            agg["last_placement"] = t["placement_points"]
+            agg["last_damage"] = t.get("damage", 0.0)
             for p in t["players"]:
                 agg["players"].add(p["name"])
                 pid = p["playerId"] or p["name"]
@@ -127,9 +134,18 @@ def aggregate(parsed_matches: list[dict]) -> dict:
             "wins": agg["wins"],
             "best_rank": agg["best_rank"],
             "avg_rank": round(agg["_rank_sum"] / m, 2),
+            "last_match_points": agg["last_match_points"],
+            "last_placement": agg["last_placement"],
+            "last_damage": round(agg["last_damage"], 1),
             "players": sorted(agg["players"]),
         })
-    team_rows.sort(key=lambda r: (-r["total"], -r["wins"], r["avg_rank"]))
+    # 공식 SUPER/EWC 5.3 누적 타이브레이크:
+    #  1) 총점(누적 매치포인트) → 2) 누적 순위점(킬 제외) → 3) 최근경기 매치포인트
+    #  → 4) 최근경기 순위점 → 5) 최근경기 총 데미지  (WWCD는 타이브레이크 아님)
+    team_rows.sort(key=lambda r: (
+        -r["total"], -r["placement_points"],
+        -r["last_match_points"], -r["last_placement"], -r["last_damage"],
+    ))
     for i, r in enumerate(team_rows, 1):
         r["standing"] = i
 

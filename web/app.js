@@ -25,9 +25,10 @@ function renderMeta(m) {
     `<div>갱신 <b>${esc(when)}</b></div>` +
     `<div>배점 <b>${esc(m.pointsRule || "-")}</b></div>`;
   const banner = document.getElementById("banner");
-  banner.innerHTML = /placeholder/i.test(m.pointsRule || "")
-    ? "⚠️ 비공식 — 순위 배점이 <b>확정 전 placeholder</b>입니다. 공식 EWC 점수와 다를 수 있습니다."
-    : "";
+  // 배점·타이브레이크는 공식(SUPER) 반영. 단 운영 2차가공(보상점 CP·패널티·어드밴티지)은
+  // API로 알 수 없어 미반영 → 공식 최종 순위와 다를 수 있음을 명시.
+  banner.innerHTML = "⚠️ 참고 — 배점·동점처리는 <b>공식 SUPER 규정</b> 반영. 다만 운영 " +
+    "<b>2차가공(보상점 CP·패널티·어드밴티지)</b>은 미반영이라 공식 최종 순위와 다를 수 있습니다.";
 }
 
 const phase = () => (DATA.phases || [])[curPhase] || { days: [], total: { teams: [], players: [] } };
