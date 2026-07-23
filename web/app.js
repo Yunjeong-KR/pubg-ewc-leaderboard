@@ -7,6 +7,10 @@ let curPhase = 0;        // phases 인덱스
 let curView = "total";   // "total" | "YYYY-MM-DD"
 let curMatch = null;     // null(합산) | match_id
 let curTab = "teams";    // "teams" | "players"
+let TWIRE = {};          // tag -> {total, kills}  (외부 검증 소스 Twire)
+let TWIRE_PHASE = "";    // TWIRE가 어느 phase 기준인지
+let TWIRE_MATCHES = null;
+let lastXKey = "";       // 자동 대조 중복 방지 키
 
 const MAPS = {
   Baltic_Main: "Erangel", Desert_Main: "Miramar", Savage_Main: "Sanhok",
@@ -91,6 +95,14 @@ function hint(sel) {
   }
 }
 
+// Twire 대조: total 뷰에서 값이 다르면 Twire 값을 붉게 출력(우리값은 툴팁)
+function xcCell(tag, field, ourVal, isTotal) {
+  if (!(isTotal && TWIRE_PHASE === phase().key && Object.keys(TWIRE).length)) return fmt(ourVal);
+  const w = TWIRE[tag];
+  if (!w || w[field] === ourVal) return fmt(ourVal);
+  return `<span class="diff" title="우리 계산: ${fmt(ourVal)} · Twire 기준으로 표시">${fmt(w[field])}</span>`;
+}
+
 function teamsTable(teams, isTotal) {
   const cut = isTotal ? (phase().advanceCut || 0) : 0;
   if (!teams.length) return `<table><tbody><tr><td style="padding:24px;color:var(--muted)">데이터 없음</td></tr></tbody></table>`;
@@ -105,9 +117,9 @@ function teamsTable(teams, isTotal) {
     out += `<tr${cls}>
       <td class="rank">${t.standing}</td>
       <td class="tag">${esc(t.tag)}</td>
-      <td class="total">${fmt(t.total)}${adjBadge}</td>
+      <td class="total">${xcCell(t.tag, "total", t.total, isTotal)}${adjBadge}</td>
       <td class="num">${fmt(t.placement_points)}</td>
-      <td class="num">${fmt(t.kill_points)}</td>
+      <td class="num">${xcCell(t.tag, "kills", t.kill_points, isTotal)}</td>
       <td class="num">${fmt(t.matches)}</td>
       <td class="num">${fmt(t.wins)}</td>
       <td class="num">${t.best_rank}</td>
@@ -210,7 +222,68 @@ function downloadResults() {
   }
 }
 
-function setPhase(i) { curPhase = i; curView = "total"; curMatch = null; render(); }
+// --- Twire 교차검증 -----------------------------------------------------
+const TWIRE_Q = "query PlatformLeaderboard($tournament: String!, $game: String!){ platformLeaderboard(tournament:$tournament, game:$game){ numberOfMatches leaderboard{ team totalPoints kills players } } }";
+
+function twTag(players) {
+  const c = {};
+  (players || []).forEach((p) => { if (p && p.includes("_")) { const t = p.split("_")[0]; c[t] = (c[t] || 0) + 1; } });
+  let best = "?", n = 0;
+  for (const k in c) if (c[k] > n) { n = c[k]; best = k; }
+  return best;
+}
+
+function setXStatus(text, cls) {
+  const el = document.getElementById("xstatus");
+  if (el) { el.className = "xstatus " + cls; el.textContent = text; }
+}
+
+async function crossCheck(manual) {
+  const p = phase();
+  const meta = DATA.meta || {};
+  const tw = meta.twire, tour = p.twireTournament;
+  lastXKey = curPhase + "|" + (meta.generatedAt || "");
+  if (!tw || !tour) {
+    TWIRE = {}; TWIRE_PHASE = p.key;
+    setXStatus("이 단계는 Twire 대조 대상이 없습니다 (예: 파이널 미시작).", "muted");
+    render(); return;
+  }
+  setXStatus("Twire 대조 중…", "muted");
+  try {
+    const res = await fetch(tw.endpoint, {
+      method: "POST",
+      headers: { "x-api-key": tw.apiKey, "Content-Type": "application/json" },
+      body: JSON.stringify({ query: TWIRE_Q, variables: { tournament: tour, game: "pubg" } }),
+    });
+    const j = await res.json();
+    const lb = j.data && j.data.platformLeaderboard;
+    if (!lb || !lb.leaderboard) throw new Error("Twire 응답에 데이터 없음");
+    const map = {};
+    lb.leaderboard.forEach((x) => { map[twTag(x.players)] = { total: x.totalPoints || 0, kills: x.kills || 0 }; });
+    TWIRE = map; TWIRE_PHASE = p.key; TWIRE_MATCHES = lb.numberOfMatches;
+    const ours = p.total.teams;
+    let diff = 0, missing = 0;
+    ours.forEach((t) => { const w = map[t.tag]; if (!w) { missing++; return; } if (w.total !== t.total || w.kills !== t.kills) diff++; });
+    if (diff === 0 && missing === 0) {
+      setXStatus(`✅ 이상 없음 — Twire와 일치 (${ours.length}팀 · ${TWIRE_MATCHES}경기 기준)`, "ok");
+    } else {
+      setXStatus(`⚠️ Twire와 차이 ${diff}팀${missing ? ` (Twire에 없는 ${missing}팀)` : ""} — 붉은 값 = Twire 기준 · Twire ${TWIRE_MATCHES}경기 vs 우리 ${p.matchCount}경기`, "warn");
+    }
+    render();
+  } catch (e) {
+    TWIRE = {}; TWIRE_PHASE = p.key;
+    setXStatus("Twire 대조 실패: " + ((e && e.message) || e) + " — 버튼으로 재시도", "warn");
+    render();
+  }
+}
+
+function maybeCrossCheck() {
+  if (!DATA) return;
+  const k = curPhase + "|" + ((DATA.meta || {}).generatedAt || "");
+  if (k !== lastXKey) crossCheck(false);
+}
+
+function setPhase(i) { curPhase = i; curView = "total"; curMatch = null; render(); maybeCrossCheck(); }
 function setView(v) { curView = v; curMatch = null; render(); }
 function setMatch(id) { curMatch = id; render(); }
 function setTab(t) { curTab = t; render(); }
@@ -225,6 +298,7 @@ async function load() {
     if (curView !== "total" && !days.some((d) => d.date === curView)) { curView = "total"; curMatch = null; }
     renderMeta(DATA.meta || {});
     render();
+    maybeCrossCheck();   // 데이터 불러온 순간 Twire와 자동 대조 (새 데이터일 때만)
   } catch (e) {
     document.getElementById("view").innerHTML =
       `<div class="err">데이터를 불러오지 못했습니다: ${esc(e.message)}<br>` +

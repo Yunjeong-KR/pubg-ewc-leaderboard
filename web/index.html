@@ -80,6 +80,14 @@
   .tag { font-weight: 700; letter-spacing: .3px; }
   .total { font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
   .adj { font-size: 11px; font-weight: 700; color: var(--accent-2); cursor: help; }
+  .xcheck { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin: 0 0 12px; }
+  .xbtn { background: #14403a; color: #bfe; border: 1px solid #1f6b60; padding: 6px 14px; border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600; }
+  .xbtn:hover { background: #1a534a; }
+  .xstatus { font-size: 13px; }
+  .xstatus.ok { color: #5fd08a; }
+  .xstatus.warn { color: #ff6b6b; font-weight: 600; }
+  .xstatus.muted { color: var(--muted); }
+  td .diff { color: #ff5b5b; font-weight: 700; cursor: help; }
   td.num { font-variant-numeric: tabular-nums; }
   .players { color: var(--muted); font-size: 12.5px; }
   .err { color: #ff6b6b; padding: 16px; }
@@ -97,6 +105,10 @@
   <div class="days" id="days" role="tablist"></div>
   <div class="matches" id="matches" role="tablist"></div>
   <p class="viewhint" id="viewhint"></p>
+  <div class="xcheck">
+    <button class="xbtn" onclick="crossCheck(true)">🔄 Twire 대조</button>
+    <span id="xstatus" class="xstatus muted"></span>
+  </div>
   <div class="tabs" role="tablist">
     <button id="tab-teams" role="tab" aria-selected="true" onclick="setTab('teams')">팀 순위</button>
     <button id="tab-players" role="tab" aria-selected="false" onclick="setTab('players')">선수 (킬)</button>

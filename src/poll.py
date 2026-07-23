@@ -88,6 +88,7 @@ def build_event(client: PubgClient, cfg: dict, cache_dir: pathlib.Path,
             "advanceCut": int(ph.get("advance_cut", 0)),
             "matchCount": len(parsed),
             "adjustments": adjustments,
+            "twireTournament": ph.get("twireTournament", ""),
             "total": views["total"],
             "days": views["days"],
         })
@@ -97,6 +98,7 @@ def build_event(client: PubgClient, cfg: dict, cache_dir: pathlib.Path,
             "generatedAt": dt.datetime.now(dt.timezone.utc).isoformat(),
             "pointsRule": rules.name,
             "tzOffsetHours": tz_offset,
+            "twire": cfg.get("twire"),   # 대시보드가 브라우저에서 직접 대조에 사용
         },
         "phases": phases_out,
     }
