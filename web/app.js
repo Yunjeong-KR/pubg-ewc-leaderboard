@@ -103,6 +103,14 @@ function xcCell(tag, field, ourVal, isTotal) {
   return `<span class="diff" title="우리 계산: ${fmt(ourVal)} · Twire 기준으로 표시">${fmt(w[field])}</span>`;
 }
 
+// 팀 셀: 공식 풀네임 + 태그 병기 (풀네임 없으면 태그만)
+function teamCell(tag) {
+  const full = ((DATA.meta || {}).teamNames || {})[tag];
+  return full && full !== tag
+    ? `<span class="fullname">${esc(full)}</span><span class="tagsub">${esc(tag)}</span>`
+    : `<span class="fullname">${esc(tag)}</span>`;
+}
+
 function teamsTable(teams, isTotal) {
   const cut = isTotal ? (phase().advanceCut || 0) : 0;
   if (!teams.length) return `<table><tbody><tr><td style="padding:24px;color:var(--muted)">데이터 없음</td></tr></tbody></table>`;
@@ -116,7 +124,7 @@ function teamsTable(teams, isTotal) {
       : "";
     out += `<tr${cls}>
       <td class="rank">${t.standing}</td>
-      <td class="tag">${esc(t.tag)}</td>
+      <td>${teamCell(t.tag)}</td>
       <td class="num">${fmt(t.matches)}</td>
       <td class="num">${fmt(t.placement_points)}</td>
       <td class="num">${xcCell(t.tag, "kills", t.kill_points, isTotal)}</td>

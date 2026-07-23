@@ -20,6 +20,33 @@
     "shard": "4bbcb126-84f8-11f1-b903-6adabec81c44",
     "_note": "Twire 공개 웹앱 클라이언트 키(비밀 아님). 대시보드가 직접 대조에 사용. phase.twireTournament = shard + '-' + round값. round값은 `py -m src.poll --twire-info`(또는 discover 워크플로)로 확인."
   },
+  "_team_names_source": "EWC 2026 공식 Participant Rosters 시트 (Team Tag → Team). 대시보드 표시용 — 내부 키는 태그 유지.",
+  "team_names": {
+    "17": "17 Gaming",
+    "4AM": "Four Angry Men",
+    "AGAL": "AG.AL",
+    "DNS": "DN SOOPers",
+    "FLC": "Team Falcons",
+    "FS": "FULL SENSE",
+    "GAM": "GAM Esports",
+    "GEN": "Gen.G Esports",
+    "GK": "Geekay Esports",
+    "JDG": "JD Gaming",
+    "MiTH": "MiTH",
+    "NAVI": "Natus Vincere",
+    "NMSS": "Team Nemesis",
+    "PeRo": "Petrichor Road",
+    "R8": "R8 Esports",
+    "SE": "Shadow Esports",
+    "SP": "Sharper Esports",
+    "T1": "T1",
+    "TL": "Team Liquid",
+    "TWIS": "Twisted Minds",
+    "TYL": "TYLOO",
+    "VC": "The Vicious Esports",
+    "VIT": "Team Vitality",
+    "VP": "Virtus.pro"
+  },
   "phases": [
     {
       "key": "group",
